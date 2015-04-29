@@ -3,3 +3,6 @@ static/*
 *.pyc
 node_modules/
 *.db
+
+# ignore instance specific config
+instance/*.py
