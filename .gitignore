@@ -2,3 +2,4 @@
 static/*
 *.pyc
 node_modules/
+*.db
