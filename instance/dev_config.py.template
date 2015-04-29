@@ -1,0 +1,21 @@
+import logging
+from os import path
+
+LOG_LEVEL = logging.DEBUG
+
+DEBUG = True
+
+SECRET_KEY = 'A STRONG SECRET KEY FOR FLASK HERE'
+
+EVEOAUTH = dict(
+    consumer_key='YOUR KEY HERE',
+    consumer_secret='YOUR SECRET HERE',
+)
+
+
+instance_relative_config = True
+static_folder = '../static'
+static_url_path = 'static'
+
+
+SQLALCHEMY_DATABASE_URI = "sqlite:///%s" % path.abspath(path.join('.', 'evesso.dev.db'))
