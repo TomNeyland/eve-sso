@@ -23,4 +23,5 @@ requests==2.5.1
 requests-oauthlib==0.4.2
 simplejson==3.6.5
 six==1.9.0
+ujson==1.33
 wsgiref==0.1.2
