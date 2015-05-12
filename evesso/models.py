@@ -1,8 +1,35 @@
+# Any inconsistencies in naming standards are due to
+# this code integrating with an external api
 from sqlalchemy import func
+from sqlalchemy.types import Enum
 from sqlalchemy.ext.associationproxy import association_proxy
 from flask.ext.login import UserMixin
 from evesso import db
-from evesso.sso import eve_oauth
+
+GroupAuthLevel = Enum('not authed',
+                      'authed',
+                      'admin',
+                      'blacklisted',
+                      name='group_auth_level')
+
+
+class Group(db.Model):
+
+    __tablename__ = 'groups'
+
+    group_name = db.Column(db.String, primary_key=True)
+
+    members = db.relationship('Character', secondary='group_users')
+
+
+class GroupUser(db.Model):
+    """Connects Users to Groups and indicates what 'auth_level' they have"""
+
+    __tablename__ = 'group_users'
+
+    CharacterID = db.Column(db.String, primary_key=True)
+    group_name = db.Column(db.String, primary_key=True)
+    auth_level = db.Column(GroupAuthLevel)
 
 
 class Character(db.Model, UserMixin):
@@ -10,7 +37,7 @@ class Character(db.Model, UserMixin):
     __tablename__ = 'characters'
 
     CharacterID = db.Column(db.String, primary_key=True)
-    mainCharacterID = db.Column(db.String, db.ForeignKey('characters.CharacterID'), nullable=True) #
+    mainCharacterID = db.Column(db.String, db.ForeignKey('characters.CharacterID'), nullable=True)
     CharacterName = db.Column(db.String)
     CharacterOwnerHash = db.Column(db.String)
     ExpiresOn = db.Column(db.DateTime(timezone=True))
@@ -23,6 +50,8 @@ class Character(db.Model, UserMixin):
 
     crest_authorization = db.relationship('CrestAuthorization', backref='character', uselist=False)
     other_crest_authorizations = association_proxy('other_characters', 'crest_authorization')
+
+    groups = db.relationship('Group', secondary='group_users')
 
     def get_id(self):
         return self.CharacterID
@@ -44,4 +73,3 @@ class CrestAuthorization(db.Model):
 
     def is_expired(self):
         False
-
