@@ -6,6 +6,7 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from flask.ext.login import UserMixin
 from evesso import db
 
+
 GroupAuthLevel = Enum('not authed',
                       'authed',
                       'admin',
@@ -17,7 +18,8 @@ class Group(db.Model):
 
     __tablename__ = 'groups'
 
-    group_name = db.Column(db.String, primary_key=True)
+    name = db.Column(db.String, primary_key=True)
+    description = db.Column(db.String)
 
     members = db.relationship('Character', secondary='group_users')
 
