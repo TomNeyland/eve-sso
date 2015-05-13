@@ -20,6 +20,7 @@ class Group(db.Model):
 
     name = db.Column(db.String, primary_key=True)
     description = db.Column(db.String)
+    is_private = db.Column(db.Boolean, index=True)
 
     members = db.relationship('Character', secondary='group_users')
 
@@ -29,8 +30,8 @@ class GroupUser(db.Model):
 
     __tablename__ = 'group_users'
 
-    CharacterID = db.Column(db.String, primary_key=True)
-    group_name = db.Column(db.String, primary_key=True)
+    CharacterID = db.Column(db.String, db.ForeignKey('characters.CharacterID'), primary_key=True)
+    group_name = db.Column(db.String, db.ForeignKey('groups.name'), primary_key=True)
     auth_level = db.Column(GroupAuthLevel)
 
 
@@ -75,3 +76,25 @@ class CrestAuthorization(db.Model):
 
     def is_expired(self):
         False
+
+
+class ChatroomCharacters(db.Model):
+
+    __tablename__ = 'chatroom_characters'
+
+    CharacterID = db.Column(db.String, db.ForeignKey('characters.CharacterID'), primary_key=True)
+    group_name = db.Column(db.String, db.ForeignKey('chatrooms.name'), primary_key=True)
+
+
+class Chatroom(db.Model):
+
+    __tablename__ = 'chatrooms'
+
+    name = db.Column(db.String, primary_key=True)
+    motd = db.Column(db.String)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    members = db.relationship('Character', secondary='chatroom_characters')
+
+
