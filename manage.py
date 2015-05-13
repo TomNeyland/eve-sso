@@ -28,7 +28,7 @@ def drop():
 
 
 @manager.command
-def create(default_data=False, sample_data=False):
+def create(default_data=True, sample_data=False):
     "Creates database tables from sqlalchemy models"
     db.create_all()
     if default_data or sample_data:
@@ -36,7 +36,7 @@ def create(default_data=False, sample_data=False):
 
 
 @manager.command
-def recreate(default_data=False, sample_data=False):
+def recreate(default_data=True, sample_data=False):
     "Recreates database tables (same as issuing 'drop' and then 'create')"
     drop()
 
@@ -44,19 +44,14 @@ def recreate(default_data=False, sample_data=False):
 
 
 @manager.command
-def populate(default_data=False, sample_data=False):
+def populate(default_data=True, sample_data=False):
     "Populate database with default data"
     from fixtures import dbfixture
 
     if default_data:
-        from fixtures.default_data import all
-        default_data = dbfixture.data(*all)
+        from fixtures import ChatroomData
+        default_data = dbfixture.data(ChatroomData)
         default_data.setup()
-
-    if sample_data:
-        from fixtures.sample_data import all
-        sample_data = dbfixture.data(*all)
-        sample_data.setup()
 
 
 if __name__ == "__main__":
