@@ -1,6 +1,9 @@
 import sys
 from flask import Flask, current_app
 from flask.ext.sqlalchemy import SQLAlchemy
+
+from evesso import utils
+
 from evesso.sso import oauth, eve_oauth
 
 import logging
@@ -21,12 +24,12 @@ def setup_logging(app=current_app):
     logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 
-
 def create_app(config=None):
     log.debug('creating app with config: %s', config)
 
     import models
     from evesso.auth import auth, login_manager
+    from evesso.chat import socketio
 
     app = Flask(__name__, instance_relative_config=True, static_folder='../static/build/app/', static_url_path='/static')
     app.config.from_pyfile(config)
@@ -35,9 +38,16 @@ def create_app(config=None):
 
     db.init_app(app)
     app.db = db
+    db.scoped_session = scoped_session
+
+
+    socketio.init_app(app)
+    app.socketio = socketio
+
 
     oauth.init_app(app)
     app.eve_oauth = eve_oauth
+
 
     login_manager.init_app(app)
     app.login_manager = login_manager
@@ -47,4 +57,7 @@ def create_app(config=None):
 
     return app
 
+
+def scoped_session():
+    pass
 

@@ -11,3 +11,7 @@ class ChatroomData(DataSet):
     class notifications:
         name = "notifications"
         motd = "This chatroom contains everyone"
+
+	class general:
+		name = "general"
+		motd = "gbs in here"

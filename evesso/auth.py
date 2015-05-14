@@ -15,8 +15,8 @@ from flask.ext.login import LoginManager, login_required, current_user, login_us
 import requests
 import simplejson as json
 
-from evesso import db
-from .models import Character, CrestAuthorization
+from evesso import db, utils
+from .models import Character, CrestAuthorization, Chatroom
 from .sso import oauth, eve_oauth
 
 
@@ -75,18 +75,30 @@ def sso():
                                                                                             'Content-Type': 'application/x-www-form-urlencoded',
                                                                                             'Authorization': 'Bearer %s' % (crest_auth['access_token'][0])})
 
+    session['character'] = dict(CharacterID=character_data.data['CharacterID'], CharacterName=character_data.data['CharacterName'])
+    created = False
+    main_character = None
+
     if isinstance(current_user._get_current_object(), Character) and current_user.is_authenticated:
         chr_data = character_data.data
         chr_data['mainCharacterID'] = current_user.CharacterID
-        character = get_or_create_character(chr_data, crest_auth, login=True)
+        character, created = get_or_create_character(chr_data, crest_auth, login=True)
         chr_data['mainCharacter'] = current_user
     else:
-        character = get_or_create_character(character_data.data, crest_auth, login=True)
+        character, created = get_or_create_character(character_data.data, crest_auth, login=True)
 
     if character.mainCharacter is not None:
         login_user(character.mainCharacter)
+        main_character = character.mainCharacter
     else:
         login_user(character)
+        main_character = character
+
+    # do initial setup
+    if created:
+        notifications_room = Chatroom.query.get('notifications')
+        main_character.chatrooms.append(notifications_room)
+        db.session.commit()
 
     del session['access_token']
     del session['refresh_token']
@@ -113,7 +125,7 @@ def endpoints():
 def get_character_info(character):
 
     data = dict(expires_at=character.crest_authorization.expires_at.isoformat(),
-                expires_in=(character.crest_authorization.expires_at - datetime.datetime.utcnow()).total_seconds(),
+                expires_in=(character.crest_authorization.expires_at - utils.utcnow()).total_seconds(),
                 CharacterOwnerHash=character.CharacterOwnerHash,
                 CharacterName=character.CharacterName,
                 CharacterID=character.CharacterID,)
@@ -135,6 +147,7 @@ def get_or_create_character(character_data, crest_auth=None, login=True):
 
     character_data = dict(**character_data)
     expires_on = character_data.get('ExpiresOn')
+    created = False
 
     if expires_on is not None:
         expires_on = parse(expires_on)
@@ -143,13 +156,14 @@ def get_or_create_character(character_data, crest_auth=None, login=True):
     character = Character.query.filter_by(CharacterID=character_data['CharacterID']).first()
 
     if character is None:
+        created = True
         character = Character(**character_data)
         character.crest_authorization = CrestAuthorization(character=character, **crest_auth)
         character.crest_authorization.CharacterID = character.CharacterID
-        expires_at = datetime.datetime.utcnow() + datetime.timedelta(seconds=int(crest_auth['expires_in']) - 60)
+        expires_at = utils.utcnow() + datetime.timedelta(seconds=int(crest_auth['expires_in']) - 60)
         character.crest_authorization.expires_at = expires_at
     else:
-        expires_at = datetime.datetime.utcnow() + datetime.timedelta(seconds=int(crest_auth['expires_in']) - 60)
+        expires_at = utils.utcnow() + datetime.timedelta(seconds=int(crest_auth['expires_in']) - 60)
         character.crest_authorization.expires_at = expires_at
         character.crest_authorization.access_token = crest_auth['access_token']
         character.crest_authorization.refresh_token = crest_auth['refresh_token']
@@ -157,7 +171,7 @@ def get_or_create_character(character_data, crest_auth=None, login=True):
     db.session.add(character)
     db.session.commit()
 
-    return character
+    return (character, created)
 
 
 @eve_oauth.tokengetter
@@ -169,7 +183,7 @@ def get_eve_oauth_access_token(token='access'):
     if hasattr(current_user, 'crest_authorization'):
         if token == 'access':
             expires_at = current_user.crest_authorization.expires_at
-            if expires_at is None or (expires_at - datetime.datetime.utcnow()).total_seconds() <= 60:
+            if expires_at is None or (expires_at - utils.utcnow()).total_seconds() <= 60:
                 log.debug('Refreshing Authorization')
                 new_auth = refresh_authorization(refresh_token=current_user.crest_authorization.refresh_token).json()
                 for key, value in new_auth.items():
@@ -194,7 +208,7 @@ def get_eve_oauth_access_token(token='access'):
     #         expires_at = session.get('expires_at')
     #         log.debug('Authorization will expire at: %s \n\t %s', expires_at, session['authorization'])
 
-    #         if expires_at is None or datetime.datetime.utcnow() >= parse(expires_at):
+    #         if expires_at is None or utils.utcnow() >= parse(expires_at):
 
     #             log.debug('Refreshing Authorization')
 

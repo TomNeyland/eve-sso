@@ -2,6 +2,7 @@
 # this code integrating with an external api
 from sqlalchemy import func
 from sqlalchemy.types import Enum
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import association_proxy
 from flask.ext.login import UserMixin
 from evesso import db
@@ -12,6 +13,9 @@ GroupAuthLevel = Enum('not authed',
                       'admin',
                       'blacklisted',
                       name='group_auth_level')
+
+
+# ChatroomRole = Enum('owner', 'admin')
 
 
 class Group(db.Model):
@@ -30,17 +34,17 @@ class GroupUser(db.Model):
 
     __tablename__ = 'group_users'
 
-    CharacterID = db.Column(db.String, db.ForeignKey('characters.CharacterID'), primary_key=True)
+    CharacterID = db.Column(db.Integer, db.ForeignKey('characters.CharacterID'), primary_key=True)
     group_name = db.Column(db.String, db.ForeignKey('groups.name'), primary_key=True)
-    auth_level = db.Column(GroupAuthLevel)
+    auth_level = db.Column(GroupAuthLevel, default='authed')
 
 
 class Character(db.Model, UserMixin):
 
     __tablename__ = 'characters'
 
-    CharacterID = db.Column(db.String, primary_key=True)
-    mainCharacterID = db.Column(db.String, db.ForeignKey('characters.CharacterID'), nullable=True)
+    CharacterID = db.Column(db.Integer, primary_key=True)
+    mainCharacterID = db.Column(db.Integer, db.ForeignKey('characters.CharacterID'), nullable=True)
     CharacterName = db.Column(db.String)
     CharacterOwnerHash = db.Column(db.String)
     ExpiresOn = db.Column(db.DateTime(timezone=True))
@@ -67,7 +71,7 @@ class CrestAuthorization(db.Model):
 
     __tablename__ = 'crest_authorization'
 
-    CharacterID = db.Column(db.String, db.ForeignKey('characters.CharacterID'), primary_key=True)
+    CharacterID = db.Column(db.Integer, db.ForeignKey('characters.CharacterID'), primary_key=True)
     access_token = db.Column(db.String)
     expires_in = db.Column(db.Integer)
     expires_at = db.Column(db.DateTime(timezone=True))
@@ -82,8 +86,8 @@ class ChatroomCharacters(db.Model):
 
     __tablename__ = 'chatroom_characters'
 
-    CharacterID = db.Column(db.String, db.ForeignKey('characters.CharacterID'), primary_key=True)
-    group_name = db.Column(db.String, db.ForeignKey('chatrooms.name'), primary_key=True)
+    CharacterID = db.Column(db.Integer, db.ForeignKey('characters.CharacterID'), primary_key=True)
+    chatroom_name = db.Column(db.String, db.ForeignKey('chatrooms.name'), primary_key=True)
 
 
 class Chatroom(db.Model):
@@ -95,6 +99,15 @@ class Chatroom(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     updated_at = db.Column(db.DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
-    members = db.relationship('Character', secondary='chatroom_characters')
+    members = db.relationship('Character', secondary='chatroom_characters', backref='chatrooms')
 
+
+class Event(db.Model):
+
+    __tablename__ = 'events'
+
+    id = db.Column(db.Integer, primary_key=True)
+    type = db.Column(db.String, index=True)
+    data = db.Column(JSONB, index=True)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 

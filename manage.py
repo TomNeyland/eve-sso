@@ -1,4 +1,5 @@
 from os import path
+from flask import current_app
 from flask.ext.script import Shell, Manager, Server, prompt_bool
 import evesso.models
 from evesso import db
@@ -53,6 +54,15 @@ def populate(default_data=True, sample_data=False):
         default_data = dbfixture.data(ChatroomData)
         default_data.setup()
 
+
+
+@manager.command
+def runsocket(config='dev_config.py'):
+    from evesso import create_app
+    from evesso.chat import socketio
+    app = create_app(config)
+    app.debug = True
+    app.socketio.run(app)
 
 if __name__ == "__main__":
     manager.run()
