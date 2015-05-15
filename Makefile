@@ -15,6 +15,11 @@ no_targets__:
 setup:
 	@pip install -U -e .\[tests\]
 
+
+install:
+	@pip install -U .
+
+
 # test your application (tests in the tests/ directory)
 test: unit
 
