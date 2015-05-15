@@ -1,0 +1,22 @@
+# This file is part of resourcealchemy.
+# https://github.com/TomNeyland/eve-sso
+
+# Licensed under the TBD license:
+# http://www.opensource.org/licenses/TBD-license
+# Copyright (c) 2015, Tom Neyland <tcneyland+github@gmail.com>
+
+[run]
+omit =
+    *tests.py
+branch = True
+source =
+    evesso
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    from urllib.parse import parse_qs
+    except ImportError:
