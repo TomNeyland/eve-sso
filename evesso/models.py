@@ -30,6 +30,7 @@ class Group(db.Model):
 
 
 class GroupUser(db.Model):
+
     """Connects Users to Groups and indicates what 'auth_level' they have"""
 
     __tablename__ = 'group_users'
@@ -110,4 +111,3 @@ class Event(db.Model):
     type = db.Column(db.String, index=True)
     data = db.Column(JSONB, index=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
-

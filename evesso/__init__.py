@@ -34,7 +34,8 @@ def create_app(config=None):
     from evesso.auth import auth, login_manager
     from evesso.chat import socketio
 
-    app = Flask(__name__, instance_relative_config=True, static_folder='../static/build/app/', static_url_path='/static')
+    app = Flask(__name__, instance_relative_config=True,
+                static_folder='../static/build/app/', static_url_path='/static')
     app.config.from_pyfile(config)
 
     setup_logging(app)
@@ -43,18 +44,14 @@ def create_app(config=None):
     app.db = db
     db.scoped_session = scoped_session
 
-
     socketio.init_app(app)
     app.socketio = socketio
-
 
     oauth.init_app(app)
     app.eve_oauth = eve_oauth
 
-
     login_manager.init_app(app)
     app.login_manager = login_manager
-
 
     app.register_blueprint(auth)
 
@@ -63,4 +60,3 @@ def create_app(config=None):
 
 def scoped_session():
     pass
-

@@ -11,7 +11,7 @@
 from preggy import expect
 import evesso
 
-from tests.base import TestCase
+from .base import TestCase
 
 
 class ExportsTestCase(TestCase):

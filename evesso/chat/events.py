@@ -23,7 +23,6 @@ def emit(evt, data, **kwargs):
     db.session.commit()
 
 
-
 @socketio.on('join chatroom', namespace='/chat')
 def join_chatroom(room):
     join_room(room)

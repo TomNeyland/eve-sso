@@ -75,7 +75,8 @@ def sso():
                                                                                             'Content-Type': 'application/x-www-form-urlencoded',
                                                                                             'Authorization': 'Bearer %s' % (crest_auth['access_token'][0])})
 
-    session['character'] = dict(CharacterID=character_data.data['CharacterID'], CharacterName=character_data.data['CharacterName'])
+    session['character'] = dict(
+        CharacterID=character_data.data['CharacterID'], CharacterName=character_data.data['CharacterName'])
     created = False
     main_character = None
 
