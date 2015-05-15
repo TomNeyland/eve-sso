@@ -16,6 +16,7 @@ __version__ = '0.1.0'
 tests_require = [
     'mock',
     'nose',
+    'pylons',  # really...
     'coverage',
     'yanc',
     'preggy',
@@ -101,6 +102,7 @@ setup(
         'console_scripts': [
             # add cli scripts here in this form:
             # 'evesso=evesso.cli:main',
+            'evesso=manage:main'
         ],
     },
 )

@@ -55,7 +55,6 @@ def populate(default_data=True, sample_data=False):
         default_data.setup()
 
 
-
 @manager.command
 def runsocket(config='dev_config.py'):
     from evesso import create_app
@@ -64,5 +63,9 @@ def runsocket(config='dev_config.py'):
     app.debug = True
     app.socketio.run(app)
 
-if __name__ == "__main__":
+
+def main():
     manager.run()
+
+if __name__ == "__main__":
+    main()
