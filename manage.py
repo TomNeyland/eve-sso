@@ -56,12 +56,12 @@ def populate(default_data=True, sample_data=False):
 
 
 @manager.command
-def runsocket(config='dev_config.py'):
-    from evesso import create_app
+def runsocket(config=''):
+    from evesso import create_app, db
     from evesso.chat import socketio
     app = create_app(config)
-    app.debug = True
-    app.socketio.run(app)
+    app.debug = False
+    app.socketio.run(app, port=5000, host='0.0.0.0')
 
 
 def main():

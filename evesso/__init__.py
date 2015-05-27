@@ -33,11 +33,12 @@ def create_app(config=None):
     import models
     from evesso.auth import auth, login_manager
     from evesso.chat import socketio
+    import evesso.default_config 
 
     app = Flask(__name__, instance_relative_config=True,
                 static_folder='../static/build/app/', static_url_path='/static')
-    app.config.from_pyfile(config)
-
+    app.config.from_object(evesso.default_config)
+    #if config != '': app.config.from_pyfile(config)
     setup_logging(app)
 
     db.init_app(app)
