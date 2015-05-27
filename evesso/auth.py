@@ -21,7 +21,7 @@ from .sso import oauth, eve_oauth
 
 
 log = logging.getLogger(__name__)
-auth = Blueprint('auth', __name__)
+auth = Blueprint('auth', __name__, url_prefix='/api')
 
 REFRESH_HEADERS = {
     'Host': 'login.eveonline.com',
