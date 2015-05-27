@@ -1,0 +1,38 @@
+web:
+  restart: always
+  image: eve-sso-dev
+  expose:
+    - "5000"
+  links:
+    - postgres:postgres
+  volumes:
+    - /usr/src/app
+  env_file: .env
+  command: evesso runsocket
+
+nginx:
+  restart: always
+  build: ./nginx/
+  ports:
+    - "80:80"
+  volumes:
+    - /www/static
+  links:
+    - web:web
+
+data:
+  restart: no
+  image: postgres:latest
+  volumes:
+    - /var/lib/postgresql
+  command: true
+  env_file: .env
+
+postgres:
+  restart: always
+  image: postgres:latest
+  volumes_from:
+    - data
+  ports:
+    - "5432:5432"
+  env_file: .env
