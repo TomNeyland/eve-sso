@@ -17,7 +17,7 @@ setup:
 
 
 install:
-	@pip install -U .
+	@pip install -U -e .
 
 
 # test your application (tests in the tests/ directory)
